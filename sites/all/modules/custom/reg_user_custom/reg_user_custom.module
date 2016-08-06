@@ -1,0 +1,148 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function reg_user_custom_menu() {
+  $items['Page_registration'] = array(
+    'title' => 'registration page',
+   'page callback' => 'drupal_get_form',
+    'access callback' => TRUE,
+    'menu_name' => 'main-menu',
+    'page arguments' => array('reg_user_custom_form'),
+    'access arguments' => array('access content'),
+    'options' => array('attributes' => array('class' => array('test-class'))),
+    'expanded' => TRUE,
+  );
+
+
+return $items;
+
+}
+
+/**
+ * Implements hook_form().
+ */
+function reg_user_custom_form($form, &$form_state) {
+
+
+  if(!isset($form_state['storage']['page'])){
+    $form_state['storage']['page'] = 1;
+  }
+
+  $page = (int)$form_state['storage']['page'];
+  switch($page) {
+    case 1: default:
+      $form['name'] = array(
+    '#title' => 'Username',
+    '#description' => 'choose a username',
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#maxlength' => 15,
+    '#size' => 22,
+
+  );
+
+  $form['mail'] = array(
+    '#title' => 'Email-@',
+    '#description' => 'enter a valid email address',
+    '#type' => 'textfield',
+    '#required' => TRUE,
+    '#maxlength' => 20,
+    '#size' => 22,
+  );
+
+  $form['passwrd'] = array(
+    '#title' => 'Password',
+    '#description' => 'Enter password',
+    '#type' => 'password',
+    '#required' => TRUE,
+    '#maxlength' => 15,
+    '#size' => 15,
+  );
+
+  $form['news'] = array(
+    '#title' => 'I want to subscribe for newsletters',
+    '#type' => 'checkbox',
+    '#validated' => TRUE,
+    '#options' => array(
+      '1' => 'YES',
+    ),
+    '#states' => array(
+      'unchecked' => array(
+        '#default_value' => 0,
+      ),
+      'checked' => array(
+        '#default_value' => 1,
+      ),
+    ),
+
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+
+    break;
+
+    case 2:
+      $form['selected'] = array(
+        '#type' => 'select',
+        '#title' => t('Selected'),
+        '#options' => array(
+          0 => t('Drupal'),
+          1 => t('Symfony'),
+          2 => t('JS'),
+          3 => t('HTML'),
+          4 => t('JAVA'),
+          5 => t('CoffeeScript'),
+        ),
+        '#description' => t('Select the partition that you interest'),
+      );
+
+      $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Save'),
+      );
+
+      $form['back_submit'] = array(
+        '#type' => 'submit',
+        '#value' => 'Back',
+      );
+  }
+  return $form;
+}
+
+function reg_user_custom_form_submit($form, &$form_state) {
+
+  $page = $form_state['storage']['page'];
+  $form_state['rebuild'] = TRUE;
+  if($page == 1){
+
+    $edit =array(
+      'name' => $form_state['values']['name'],
+      'pass' => $form_state['values']['passwrd'],
+      'mail' => $form_state['values']['mail'],
+      'init' => $form_state['values']['mail'],
+      'status' => 1,
+      'access' => REQUEST_TIME,
+    );
+    user_save(drupal_anonymous_user(), $edit);
+    drupal_set_message(t("You are registered."));
+
+
+    if($form['news']['#checked'] == TRUE) {
+      $form_state['storage']['page']++;
+    }
+
+  }
+  if($page == 2){
+    if($form_state['values']['op'] == 'Back'){
+      $form_state['redirect'] = array('page_registration/User');
+      $form_state['storage']['page']--;
+    }
+    drupal_set_message(t("you subscribe to the newsletter."));
+  }
+
+}

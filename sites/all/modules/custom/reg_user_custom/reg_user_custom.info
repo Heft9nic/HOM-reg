@@ -1,0 +1,4 @@
+name = registration new user custom
+description = registration new user custom in  site
+core = 7.x
+package = custom
